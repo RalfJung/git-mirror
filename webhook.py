@@ -10,6 +10,7 @@ def is_github(remote_addr):
     for net in github['hooks']:
         if remote_addr in ip_network(net):
             return True
+    return False
 
 # get repository from query string
 query = os.getenv("QUERY_STRING")
@@ -18,5 +19,5 @@ repository = query.get('repository', [])
 repository = repository[0] if len(repository) else ''
 
 # execute the actual script
-git_mirror = "/home/ralf/git-mirror/update.py"
-os.execlp("sudo", "sudo", "-n", "-u", "git", git_mirror, "--web-hook", "--repository", repository)
+webhook_core = "/home/ralf/git-mirror/webhook-core.py"
+os.execlp("sudo", "sudo", "-n", "-u", "git", webhook_core, repository)
