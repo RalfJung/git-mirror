@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-# Copyright (c) 2014, Ralf Jung <post@ralfj.de>
+# Copyright (c) 2015, Ralf Jung <post@ralfj.de>
 # All rights reserved.
 # 
 # Redistribution and use in source and binary forms, with or without
