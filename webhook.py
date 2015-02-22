@@ -46,5 +46,9 @@ query = urllib.parse.parse_qs(query)
 repository = query.get('repository', [])
 repository = repository[0] if len(repository) else ''
 
+# get GitHub metadata
+githubEvent = os.getenv('HTTP_X_GITHUB_EVENT')
+githubSignature = os.getenv('HTTP_X_HUB_SIGNATURE')
+
 # execute the actual script
-os.execlp("sudo", "sudo", "-n", "-u", "git", webhook_core, repository)
+os.execlp("sudo", "sudo", "-n", "-u", "git", webhook_core, repository, str(githubEvent), str(githubSignature))

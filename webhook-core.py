@@ -28,40 +28,48 @@ import sys, traceback
 from git_mirror import *
 
 if __name__ == "__main__":
+    # call this with: <reponame> <event name> <signature>
     repo = None # we will try to use this during exception handling
     try:
         repos = load_repos()
-        reponame = sys.argv[1] if len(sys.argv) > 1 else None
+        if len(sys.argv) < 4:
+            raise Exception("Usage: {0} <reponame> <event name> <signature>".format(os.path.basename(sys.argv[0])))
+        reponame = sys.argv[1]
+        githubEvent = sys.argv[2]
+        githubSignature = sys.argv[3]
         if reponame not in repos:
             raise Exception("Repository missing or not found.")
         repo = repos[reponame]
         
         # now sync this repository
         data = get_github_payload()
-        if 'zen' in data:
+        if githubEvent == 'ping':
             # github sends this initially
             print("Content-Type: text/plain")
             print()
-            print("Welcome!")
+            print("Pong!")
             sys.exit(0)
-        ref = data["ref"]
-        oldsha = data["before"]
-        newsha = data["after"]
-        # validate the ref name
-        if re.match('refs/[a-z/]+', ref) is None:
-            raise Exception("Invalid ref name {0}".format(ref))
-        # collect URLs of this repository, to find the mirror name
-        urls = []
-        for key in ("git_url", "ssh_url", "clone_url"):
-            urls.append(data["repository"][key])
-        mirror = repo.find_mirror_by_url(urls)
-        if mirror is None:
-            raise Exception("Could not find the mirror.")
-        repo.update_ref_from_mirror(ref, oldsha, newsha, mirror, suppress_stderr = True)
-        # print an answer
-        print("Content-Type: text/plain")
-        print()
-        print("Updated {0}:{1} from mirror {2} from {3} to {4}".format(reponame, ref, mirror, oldsha, newsha))
+        elif githubEvent == 'push':
+            ref = data["ref"]
+            oldsha = data["before"]
+            newsha = data["after"]
+            # validate the ref name
+            if re.match('refs/[a-z/]+', ref) is None:
+                raise Exception("Invalid ref name {0}".format(ref))
+            # collect URLs of this repository, to find the mirror name
+            urls = []
+            for key in ("git_url", "ssh_url", "clone_url"):
+                urls.append(data["repository"][key])
+            mirror = repo.find_mirror_by_url(urls)
+            if mirror is None:
+                raise Exception("Could not find the mirror.")
+            repo.update_ref_from_mirror(ref, oldsha, newsha, mirror, suppress_stderr = True)
+            # print an answer
+            print("Content-Type: text/plain")
+            print()
+            print("Updated {0}:{1} from mirror {2} from {3} to {4}".format(reponame, ref, mirror, oldsha, newsha))
+        else:
+            raise Exception("Unexpected github event {0}.".format(githubEvent))
     except Exception as e:
         if repo is not None:
             repo.mail_owner("There was a problem running the git-mirror webhook:\n\n{0}".format(traceback.format_exc()))
