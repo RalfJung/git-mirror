@@ -24,8 +24,21 @@
 #==============================================================================
 
 # This is the hook called by GitHub as webhook. It updats the local repository, and then all the other mirrors.
-import sys, traceback
+import sys, traceback, json
 from git_mirror import *
+
+def get_github_payload(repo, signature):
+    '''Return the github-style JSON encoded payload (as if we were called as a github webhook)'''
+    data = sys.stdin.buffer.read()
+    verify_signature = repo.compute_hmac(data)
+    if signature != "sha1="+verify_signature:
+        raise Exception("You are not GitHub!")
+    try:
+        data = json.loads(data.decode('utf-8'))
+        return data
+    except ValueError:
+        return {} # nothing read
+
 
 if __name__ == "__main__":
     # call this with: <reponame> <event name> <signature>
@@ -42,7 +55,7 @@ if __name__ == "__main__":
         repo = repos[reponame]
         
         # now sync this repository
-        data = get_github_payload()
+        data = get_github_payload(repo, githubSignature)
         if githubEvent == 'ping':
             # github sends this initially
             print("Content-Type: text/plain")

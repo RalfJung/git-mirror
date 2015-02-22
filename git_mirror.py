@@ -22,7 +22,8 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #==============================================================================
 import sys, os, os.path, subprocess
-import configparser, itertools, json, re
+import configparser, itertools, re
+import hmac, hashlib
 import email.mime.text, email.utils, smtplib
 
 mail_sender = "null@localhost"
@@ -76,21 +77,13 @@ def send_mail(subject, text, recipients, sender, replyTo = None):
     s.sendmail(sender, recipients, msg.as_string())
     s.quit()
 
-def get_github_payload():
-    '''Reeturn the github-style JSON encoded payload (as if we were called as a github webhook)'''
-    try:
-        data = sys.stdin.buffer.read()
-        data = json.loads(data.decode('utf-8'))
-        return data
-    except:
-        return {} # nothing read
-
 class Repo:
     def __init__(self, name, conf):
         '''Creates a repository from a section of the git-mirror configuration file'''
         self.name = name
         self.local = conf['local']
         self.owner = conf['owner'] # email address to notify in case of problems
+        self.hmac_secret = conf['hmac-secret'].encode('utf-8')
         self.deploy_key = conf['deploy-key'] # the SSH ky used for authenticating against remote hosts
         self.mirrors = {} # maps mirrors to their URLs
         mirror_prefix = 'mirror-'
@@ -101,6 +94,11 @@ class Repo:
     def mail_owner(self, msg):
         global mail_sender
         send_mail("git-mirror {0}".format(self.name), msg, recipients = [self.owner], sender = mail_sender)
+
+    def compute_hmac(self, data):
+        h = hmac.new(self.hmac_secret, digestmod = hashlib.sha1)
+        h.update(data)
+        return h.hexdigest()
     
     def find_mirror_by_url(self, match_urls):
         for mirror, url in self.mirrors.items():
