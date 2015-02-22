@@ -25,6 +25,8 @@ import sys, os, subprocess
 import configparser, itertools, json, re
 import email.mime.text, email.utils, smtplib
 
+mail_sender = "null@localhost"
+
 class GitCommand:
     def __getattr__(self, name):
         def call(*args, capture_stderr = False, check = True):
@@ -58,20 +60,20 @@ def read_config(fname, defSection = 'DEFAULT'):
         config.read_file(stream)
     return config
 
-def send_mail(subject, text, receivers, sender='post+webhook@ralfj.de', replyTo=None):
-    assert isinstance(receivers, list)
-    if not len(receivers): return # nothing to do
+def send_mail(subject, text, recipients, sender, replyTo = None):
+    assert isinstance(recipients, list)
+    if not len(recipients): return # nothing to do
     # construct content
     msg = email.mime.text.MIMEText(text.encode('UTF-8'), 'plain', 'UTF-8')
     msg['Subject'] = subject
     msg['Date'] = email.utils.formatdate(localtime=True)
     msg['From'] = sender
-    msg['To'] = ', '.join(receivers)
+    msg['To'] = ', '.join(recipients)
     if replyTo is not None:
         msg['Reply-To'] = replyTo
     # put into envelope and send
     s = smtplib.SMTP('localhost')
-    s.sendmail(sender, receivers, msg.as_string())
+    s.sendmail(sender, recipients, msg.as_string())
     s.quit()
 
 def get_github_payload():
@@ -96,7 +98,8 @@ class Repo:
             self.mirrors[mirror] = conf[name]
     
     def mail_owner(self, msg):
-        send_mail("git-mirror {0}".format(self.name), msg, [self.owner])
+        global mail_sender
+        send_mail("git-mirror {0}".format(self.name), msg, recipients = [self.owner], sender = mail_sender)
     
     def find_mirror_by_url(self, match_urls):
         for mirror, url in self.mirrors.items():
@@ -169,8 +172,11 @@ def find_repo_by_directory(repos, dir):
     return None
 
 def load_repos():
+    global mail_sender
     conffile = os.path.join(os.path.dirname(__file__), 'git-mirror.conf')
     conf = read_config(conffile)
+    mail_sender = conf['mail-sender']
+    
     repos = {}
     for name, section in conf.items():
         if name != 'DEFAULT':
