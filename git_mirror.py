@@ -21,7 +21,7 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #==============================================================================
-import sys, os, subprocess
+import sys, os, os.path, subprocess
 import configparser, itertools, json, re
 import email.mime.text, email.utils, smtplib
 
@@ -91,6 +91,7 @@ class Repo:
         self.name = name
         self.local = conf['local']
         self.owner = conf['owner'] # email address to notify in case of problems
+        self.deploy_key = conf['deploy-key'] # the SSH ky used for authenticating against remote hosts
         self.mirrors = {} # maps mirrors to their URLs
         mirror_prefix = 'mirror-'
         for name in filter(lambda s: s.startswith(mirror_prefix), conf.keys()):
@@ -107,10 +108,18 @@ class Repo:
                 return mirror
         return None
     
+    def setup_env(self):
+        '''Setup the environment to work with this repository'''
+        os.chdir(self.local)
+        ssh_set_ident = os.path.join(os.path.dirname(__file__), 'ssh-set-ident.conf')
+        os.setenv('GIT_SSH', ssh_set_ident)
+        ssh_ident = os.path.join(os.path.expanduser('~/.ssh'), self.deploy_key)
+        os.setenv('SSH_IDENT', ssh_ident)
+    
     def update_mirrors(self, ref, oldsha, newsha, except_mirrors = [], suppress_stderr = False):
         '''Update the <ref> from <oldsha> to <newsha> on all mirrors. The update must already have happened locally.'''
         assert len(oldsha) == 40 and len(newsha) == 40, "These are not valid SHAs."
-        os.chdir(self.local)
+        self.setup_env()
         # check for a forced update
         is_forced = newsha != git_nullsha and oldsha != git_nullsha and git_is_forced_update(oldsha, newsha)
         # tell all the mirrors
@@ -127,7 +136,7 @@ class Repo:
     
     def update_ref_from_mirror(self, ref, oldsha, newsha, mirror, suppress_stderr = False):
         '''Update the local version of this <ref> to what's currently on the given <mirror>. <oldsha> and <newsha> are checked. Then update all the other mirrors.'''
-        os.chdir(self.local)
+        self.setup_env()
         url = self.mirrors[mirror]
         # first check whether the remote really is at newsha
         remote_state, code = git.ls_remote(url, ref)
