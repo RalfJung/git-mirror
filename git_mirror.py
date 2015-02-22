@@ -111,10 +111,10 @@ class Repo:
     def setup_env(self):
         '''Setup the environment to work with this repository'''
         os.chdir(self.local)
-        ssh_set_ident = os.path.join(os.path.dirname(__file__), 'ssh-set-ident.conf')
-        os.setenv('GIT_SSH', ssh_set_ident)
+        ssh_set_ident = os.path.join(os.path.dirname(__file__), 'ssh-set-ident.sh')
+        os.putenv('GIT_SSH', ssh_set_ident)
         ssh_ident = os.path.join(os.path.expanduser('~/.ssh'), self.deploy_key)
-        os.setenv('SSH_IDENT', ssh_ident)
+        os.putenv('SSH_IDENT', ssh_ident)
     
     def update_mirrors(self, ref, oldsha, newsha, except_mirrors = [], suppress_stderr = False):
         '''Update the <ref> from <oldsha> to <newsha> on all mirrors. The update must already have happened locally.'''
@@ -184,7 +184,7 @@ def load_repos():
     global mail_sender
     conffile = os.path.join(os.path.dirname(__file__), 'git-mirror.conf')
     conf = read_config(conffile)
-    mail_sender = conf['mail-sender']
+    mail_sender = conf['DEFAULT']['mail-sender']
     
     repos = {}
     for name, section in conf.items():

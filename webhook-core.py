@@ -38,6 +38,12 @@ if __name__ == "__main__":
         
         # now sync this repository
         data = get_github_payload()
+        if 'zen' in data:
+            # github sends this initially
+            print("Content-Type: text/plain")
+            print()
+            print("Welcome!")
+            sys.exit(0)
         ref = data["ref"]
         oldsha = data["before"]
         newsha = data["after"]
