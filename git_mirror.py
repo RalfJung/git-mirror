@@ -35,7 +35,7 @@ class GitCommand:
                If <check> is true, throw an exception of the process fails with non-zero exit code. Otherwise, do not.
                In any case, return a pair of the captured output and the exit code.'''
             cmd = ["git", name.replace('_', '-')] + list(args)
-            with subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT if capture_stderr else None) as p:
+            with subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT if capture_stderr else sys.stderr) as p:
                 (stdout, stderr) = p.communicate()
                 assert stderr is None
                 code = p.returncode
@@ -112,25 +112,27 @@ class Repo:
         ssh_set_ident = os.path.join(os.path.dirname(__file__), 'ssh-set-ident.sh')
         os.putenv('GIT_SSH', ssh_set_ident)
         ssh_ident = os.path.join(os.path.expanduser('~/.ssh'), self.deploy_key)
-        os.putenv('SSH_IDENT', ssh_ident)
+        os.putenv('GIT_MIRROR_SSH_IDENT', ssh_ident)
     
-    def update_mirrors(self, ref, oldsha, newsha, except_mirrors = [], suppress_stderr = False):
+    def update_mirrors(self, ref, oldsha, newsha):
         '''Update the <ref> from <oldsha> to <newsha> on all mirrors. The update must already have happened locally.'''
         assert len(oldsha) == 40 and len(newsha) == 40, "These are not valid SHAs."
+        source_mirror = os.getenv("GIT_MIRROR_SOURCE") # in case of a self-call via the hooks, we can skip one of the mirrors
         self.setup_env()
         # check for a forced update
         is_forced = newsha != git_nullsha and oldsha != git_nullsha and git_is_forced_update(oldsha, newsha)
         # tell all the mirrors
         for mirror in self.mirrors:
-            if mirror in except_mirrors:
+            if mirror == source_mirror:
                 continue
+            sys.stdout.write("Updating mirror {0}\n".format(mirror)); sys.stdout.flush()
             # update this mirror
             if is_forced:
                 # forcibly update ref remotely (someone already did a force push and hence accepted data loss)
-                git.push('--force', self.mirrors[mirror], newsha+":"+ref, capture_stderr = suppress_stderr)
+                git.push('--force', self.mirrors[mirror], newsha+":"+ref)
             else:
                 # nicely update ref remotely (this avoids data loss due to race conditions)
-                git.push(self.mirrors[mirror], newsha+":"+ref, capture_stderr = suppress_stderr)
+                git.push(self.mirrors[mirror], newsha+":"+ref)
     
     def update_ref_from_mirror(self, ref, oldsha, newsha, mirror, suppress_stderr = False):
         '''Update the local version of this <ref> to what's currently on the given <mirror>. <oldsha> and <newsha> are checked. Then update all the other mirrors.'''
@@ -154,7 +156,7 @@ class Repo:
         assert local_sha in (oldsha, newsha), "Someone lied about the old SHA."
         # if we are already at newsha locally, we also ran the local hooks, so we do not have to do anything
         if local_sha == newsha:
-            return
+            return "Local repository is already up-to-date."
         # update local state from local_sha to newsha.
         if newsha != git_nullsha:
             # We *could* now fetch the remote ref and immediately update the local one. However, then we would have to
@@ -169,8 +171,15 @@ class Repo:
             # ref does not exist anymore. delete it.
             assert local_sha != git_nullsha, "Why didn't we bail out earlier if there is nothing to do...?"
             git.update_ref("-d", ref, local_sha) # this checks that the old value is still local_sha
-        # update all the mirrors
-        self.update_mirrors(ref, oldsha, newsha, [mirror], suppress_stderr)
+        # Now run the post-receive hooks. This will *also* push the changes to all mirrors, as we
+        # are one of these hooks!
+        os.putenv("GIT_MIRROR_SOURCE", mirror) # tell ourselves which repo we do *not* have to update
+        with subprocess.Popen(['hooks/post-receive'], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT) as p:
+            (stdout, stderr) = p.communicate("{0} {1} {2}\n".format(oldsha, newsha, ref).encode('utf-8'))
+            stdout = stdout.decode('utf-8')
+            if p.returncode:
+                raise Exception("post-receive git hook terminated with non-zero exit code {0}:\n{1}".format(p.returncode, stdout))
+        return stdout
 
 def find_repo_by_directory(repos, dir):
     for (name, repo) in repos.items():

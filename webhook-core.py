@@ -76,11 +76,12 @@ if __name__ == "__main__":
             mirror = repo.find_mirror_by_url(urls)
             if mirror is None:
                 raise Exception("Could not find the mirror.")
-            repo.update_ref_from_mirror(ref, oldsha, newsha, mirror, suppress_stderr = True)
+            stdout = repo.update_ref_from_mirror(ref, oldsha, newsha, mirror, suppress_stderr = True)
             # print an answer
             print("Content-Type: text/plain")
             print()
             print("Updated {0}:{1} from mirror {2} from {3} to {4}".format(reponame, ref, mirror, oldsha, newsha))
+            print(stdout)
         else:
             raise Exception("Unexpected github event {0}.".format(githubEvent))
     except Exception as e:

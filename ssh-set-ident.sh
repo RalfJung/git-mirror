@@ -25,4 +25,4 @@
 # This sets the SSH identitiy based on an environment variable. That makes it possible for the git-mirror
 # scripts to use git with a particular SSH identity.
 
-exec ssh -i "$SSH_IDENT" "$@"
+exec ssh -i "$GIT_MIRROR_SSH_IDENT" "$@"
