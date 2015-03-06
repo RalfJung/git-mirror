@@ -45,7 +45,7 @@ if __name__ == "__main__":
             repo.update_mirrors(ref, oldsha, newsha)
     except Exception as e:
         if repo is not None:
-            repo.mail_owner("There was a problem running the git-mirror git hook:\n\n{0}".format(traceback.format_exc()))
+            repo.mail_owner("There was a problem running the git-mirror git hook:\n\n{}".format(traceback.format_exc()))
         # do not print all the details
-        sys.stderr.write("We have a problem:\n{0}".format('\n'.join(traceback.format_exception_only(type(e), e))))
+        sys.stderr.write("We have a problem:\n{}".format('\n'.join(traceback.format_exception_only(type(e), e))))
 

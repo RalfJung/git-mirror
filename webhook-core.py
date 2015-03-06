@@ -46,7 +46,7 @@ if __name__ == "__main__":
     try:
         repos = load_repos()
         if len(sys.argv) < 4:
-            raise Exception("Usage: {0} <reponame> <event name> <signature>".format(os.path.basename(sys.argv[0])))
+            raise Exception("Usage: {} <reponame> <event name> <signature>".format(os.path.basename(sys.argv[0])))
         reponame = sys.argv[1]
         githubEvent = sys.argv[2]
         githubSignature = sys.argv[3]
@@ -68,7 +68,7 @@ if __name__ == "__main__":
             newsha = data["after"]
             # validate the ref name
             if re.match('refs/[a-z/]+', ref) is None:
-                raise Exception("Invalid ref name {0}".format(ref))
+                raise Exception("Invalid ref name {}".format(ref))
             # collect URLs of this repository, to find the mirror name
             urls = []
             for key in ("git_url", "ssh_url", "clone_url"):
@@ -80,15 +80,15 @@ if __name__ == "__main__":
             # print an answer
             print("Content-Type: text/plain")
             print()
-            print("Updated {0}:{1} from mirror {2} from {3} to {4}".format(reponame, ref, mirror, oldsha, newsha))
+            print("Updated {}:{} from mirror {} from {} to {}".format(reponame, ref, mirror, oldsha, newsha))
             print(stdout)
         else:
-            raise Exception("Unexpected github event {0}.".format(githubEvent))
+            raise Exception("Unexpected github event {}.".format(githubEvent))
     except Exception as e:
         if repo is not None:
-            repo.mail_owner("There was a problem running the git-mirror webhook:\n\n{0}".format(traceback.format_exc()))
+            repo.mail_owner("There was a problem running the git-mirror webhook:\n\n{}".format(traceback.format_exc()))
         # do not print all the details
         print("Status: 500 Internal Server Error")
         print("Content-Type: text/plain")
         print()
-        print("We have a problem:\n{0}".format('\n'.join(traceback.format_exception_only(type(e), e))))
+        print("We have a problem:\n{}".format('\n'.join(traceback.format_exception_only(type(e), e))))

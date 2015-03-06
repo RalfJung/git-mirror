@@ -40,7 +40,7 @@ class GitCommand:
                 assert stderr is None
                 code = p.returncode
                 if check and code:
-                    raise Exception("Error running {0}: Non-zero exit code".format(cmd))
+                    raise Exception("Error running {}: Non-zero exit code".format(cmd))
             return (stdout.decode('utf-8').strip('\n'), code)
         return call
 
@@ -93,7 +93,7 @@ class Repo:
     
     def mail_owner(self, msg):
         global mail_sender
-        send_mail("git-mirror {0}".format(self.name), msg, recipients = [self.owner], sender = mail_sender)
+        send_mail("git-mirror {}".format(self.name), msg, recipients = [self.owner], sender = mail_sender)
 
     def compute_hmac(self, data):
         h = hmac.new(self.hmac_secret, digestmod = hashlib.sha1)
@@ -125,7 +125,7 @@ class Repo:
         for mirror in self.mirrors:
             if mirror == source_mirror:
                 continue
-            sys.stdout.write("Updating mirror {0}\n".format(mirror)); sys.stdout.flush()
+            sys.stdout.write("Updating mirror {}\n".format(mirror)); sys.stdout.flush()
             # update this mirror
             if is_forced:
                 # forcibly update ref remotely (someone already did a force push and hence accepted data loss)
@@ -144,14 +144,14 @@ class Repo:
             remote_sha = remote_state.split()[0]
         else:
             remote_sha = git_nullsha
-        assert newsha == remote_sha, "Someone lied about the new SHA, which should be {0}.".format(newsha)
+        assert newsha == remote_sha, "Someone lied about the new SHA, which should be {}.".format(newsha)
         # locally, we have to be at oldsha or newsha (the latter can happen if we already got this update, e.g. if it originated from us)
         local_state, code = git.show_ref(ref, check=False)
         if code == 0:
             local_sha = local_state.split()[0]
         else:
             if len(local_state):
-                raise Exception("Something went wrong getting the local state of {0}.".format(ref))
+                raise Exception("Something went wrong getting the local state of {}.".format(ref))
             local_sha = git_nullsha
         assert local_sha in (oldsha, newsha), "Someone lied about the old SHA."
         # if we are already at newsha locally, we also ran the local hooks, so we do not have to do anything
@@ -175,10 +175,10 @@ class Repo:
         # are one of these hooks!
         os.putenv("GIT_MIRROR_SOURCE", mirror) # tell ourselves which repo we do *not* have to update
         with subprocess.Popen(['/bin/sh', 'hooks/post-receive'], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT) as p:
-            (stdout, stderr) = p.communicate("{0} {1} {2}\n".format(oldsha, newsha, ref).encode('utf-8'))
+            (stdout, stderr) = p.communicate("{} {} {}\n".format(oldsha, newsha, ref).encode('utf-8'))
             stdout = stdout.decode('utf-8')
             if p.returncode:
-                raise Exception("post-receive git hook terminated with non-zero exit code {0}:\n{1}".format(p.returncode, stdout))
+                raise Exception("post-receive git hook terminated with non-zero exit code {}:\n{}".format(p.returncode, stdout))
         return stdout
 
 def find_repo_by_directory(repos, dir):
