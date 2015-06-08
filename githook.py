@@ -41,7 +41,10 @@ if __name__ == "__main__":
         repo = repos[reponame]
         # parse the information we get from stdin. we trust this information.
         for line in sys.stdin:
-            (oldsha, newsha, ref) = line.split()
+            line = line.split()
+            if len(line) == 0: continue
+            assert len(line) == 3
+            (oldsha, newsha, ref) = line
             repo.update_mirrors(ref, oldsha, newsha)
     except Exception as e:
         if repo is not None:
