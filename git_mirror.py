@@ -27,6 +27,7 @@ import hmac, hashlib
 import email.mime.text, email.utils, smtplib
 
 mail_sender = "null@localhost"
+config_file = os.path.join(os.path.dirname(__file__), 'git-mirror.conf')
 
 class GitCommand:
     def __getattr__(self, name):
@@ -53,10 +54,10 @@ def git_is_forced_update(oldsha, newsha):
     assert code in (0, 1)
     return False if code == 0 else True # if oldsha is an ancestor of newsha, then this was a "good" (non-forced) update
 
-def read_config(fname, defSection = 'DEFAULT'):
+def read_config(defSection = 'DEFAULT'):
     '''Reads a config file that may have options outside of any section.'''
     config = configparser.ConfigParser()
-    with open(fname) as file:
+    with open(config_file) as file:
         stream = itertools.chain(("["+defSection+"]\n",), file)
         config.read_file(stream)
     return config
@@ -189,8 +190,7 @@ def find_repo_by_directory(repos, dir):
 
 def load_repos():
     global mail_sender
-    conffile = os.path.join(os.path.dirname(__file__), 'git-mirror.conf')
-    conf = read_config(conffile)
+    conf = read_config()
     mail_sender = conf['DEFAULT']['mail-sender']
     
     repos = {}
