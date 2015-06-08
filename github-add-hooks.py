@@ -68,7 +68,7 @@ webhook_url = conf['DEFAULT']['webhook-url']
 shutil.copy(config_file, config_file+".bak")
 with open(config_file, 'a') as f:
     f.write('\n[{}]\n'.format(args.name))
-    f.write('owner={}\n'.format(args.owner))
+    f.write('owner={}\n'.format(args.email))
     f.write('local={}\n'.format(args.local))
     f.write('deploy-key={}\n'.format(os.path.basename(ssh_deploy_key)))
     f.write('hmac-secret={}\n'.format(hmac_secret))

@@ -154,7 +154,8 @@ class Repo:
             if len(local_state):
                 raise Exception("Something went wrong getting the local state of {}.".format(ref))
             local_sha = git_nullsha
-        assert local_sha in (oldsha, newsha), "Someone lied about the old SHA."
+        # some sanity checking, but deal gracefully with new branches appearing
+        assert local_sha in (git_nullsha, oldsha, newsha), "Someone lied about the old SHA: Local ({}) is neither old ({}) nor new ({})".format(local_sha, oldsha, newsha)
         # if we are already at newsha locally, we also ran the local hooks, so we do not have to do anything
         if local_sha == newsha:
             return "Local repository is already up-to-date."
