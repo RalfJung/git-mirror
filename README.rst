@@ -1,4 +1,4 @@
-git-mirror - Sync your git repositories
+git-mirror: Sync your git repositories
 =======================================
 
 Introduction
