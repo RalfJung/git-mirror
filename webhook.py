@@ -26,7 +26,8 @@
 # This is the CGI script receiving GitHub webhooks.
 # You may have to change the location of the "main" webhook script:
 webhook_core = "/home/git/git-mirror/webhook-core.py"
-#
+
+# Do NOT change anything below here
 import urllib.request, urllib.parse, json, os, sys
 
 # get repository from query string
