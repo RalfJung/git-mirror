@@ -134,8 +134,8 @@ Source, License
 ---------------
 
 You can find the sources in the `git repository`_ (also available `on GitHub`_). 
-They are provided under a `2-clause BSD license`_. See the file ``LICENSE-BSD`` 
-for more details.
+Guess what, the two are synced with this tool ;-) . They are provided under a 
+`2-clause BSD license`_. See the file ``LICENSE-BSD`` for more details.
 
 .. _git repository: http://www.ralfj.de/git/git-mirror.git
 .. _on GitHub: https://github.com/RalfJung/git-mirror
