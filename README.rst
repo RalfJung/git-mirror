@@ -57,7 +57,7 @@ Finally, you need to tell git-mirror where to sync incoming changes to this
 repository to. Add a block like the following to ``git-mirror.conf``::
 
   [repo-name]                                                                                                                                                                                                                                     
-  owner = post@ralfj.de                                                                                                                                                                                                                        
+  owner = email@example.com                                                                                                                                                                                                                  
   local = /home/git/repositories/repo-name.git                                                                                                                                                                                                    
   deploy-key = ssh-key                                                                                                                                                                                                               
   mirror-a = git@server2.example.com:repo-name.git
@@ -65,23 +65,24 @@ repository to. Add a block like the following to ``git-mirror.conf``::
 
 Here, ``local`` has to be set to the path where the repository is stored 
 locally. ``deploy-key`` is the name of the SSH key used for pushing the changes 
-to other repositories. ``owner`` is the e-mail-address that error messages 
-occurring during synchronization are sent to. And finally, the URLs to push to 
-are given by ``mirror-<something>``. If these other servers also run gitolite 
-and have a symmetric setup, then no matter where a change is pushed, git-mirror 
-will forward it to all the other repositories.
+to other repositories. ``owner`` is the e-mail-address that errors occurring 
+during synchronization are sent to. And finally, the URLs to push to are given 
+by ``mirror-<something>``. If these other servers also run gitolite and have a 
+symmetric setup, then no matter where a change is pushed, git-mirror will 
+forward it to all the other repositories.
 
 Setup (GitHub)
 --------------
 
-This explains how to configure a GitHub repository that should be part of a 
-synchronized set. I will assume that one of the copies of the repository lives 
-on a gitolite server you control.
+If one of the to-be-synced repositories is on GitHub, you can obviously not use 
+the procedure above to sync changes that are arriving at GitHub, to the other 
+repositories. Instead, we will use a webhook, such that GitHub tells your server 
+that a change happened, and then your server can pull the changes to its local 
+repository and synchronize all the others. This assumes that the server running 
+the webhook also hosts one of the copies of the git repository.
 
-Since you cannot install a normal git hook on GitHub, syncing changes that are 
-sent to GitHub has to be done with a webhook. First of all, you will have to 
-configure your webserver to run ``webhook.py`` as CGI script. Consult the 
-webserver documentation for more details.
+First of all, you will have to configure your webserver to run ``webhook.py`` as 
+CGI script. Consult the webserver documentation for more details.
 
 Secondly, ``webhook.py`` needs to be able to find the main git-mirror scripts, 
 and it needs to be able to execute them as the ``git`` user. For the first 
@@ -119,7 +120,7 @@ below ``mail-sender``)::
 
 Now you can call the automatic setup script as follows::
 
-  ./github-add-hooks.py -o UserName -e email@ddress.com -l ~/repositories/repo-name.git/ -n github-repo-name
+  ./github-add-hooks.py -o UserName -e email@example.com -l ~/repositories/repo-name.git/ -n github-repo-name
 
 Notice that the username is case-sensitive! This will do all the setup on the 
 GitHub side, and it will add an appropriate configuration block to your local 
