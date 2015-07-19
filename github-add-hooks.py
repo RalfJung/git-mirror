@@ -78,7 +78,7 @@ try:
     generate_ssh_key(ssh_deploy_key, 4*1024)
     add_deploy_key(ssh_deploy_key, args.owner, args.name, github_token)
     add_web_hook(webhook_url+"?repository="+args.name, hmac_secret, args.owner, args.name, github_token)
-    print("Done! Your GitHub repository is set up.\nRemember to configure the git-mirror hook for the local repository {}, e.g. in your gitolite configuration!", args.local)
+    print("Done! Your GitHub repository is set up.\nRemember to configure the git-mirror hook for the local repository {}, e.g. in your gitolite configuration!".format(args.local))
 except E:
     shutil.copy(config_file+".bak", config_file)
     raise
