@@ -42,7 +42,7 @@ conf = read_config()
 parser = argparse.ArgumentParser(description='Update and build a bunch of stuff')
 parser.add_argument("-o", "--owner",
                     dest="owner",
-                    help="The owner of this hook on GitHub")
+                    help="The username of the owner of this hook on GitHub")
 parser.add_argument("-e", "--email",
                     dest="email",
                     help="An email address that gets notified in case of trouble with the hook")
