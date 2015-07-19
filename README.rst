@@ -102,12 +102,12 @@ found.``.
 The next step is to add this as a webhook to the GitHub repository you want to 
 sync with, to create a fresh SSH key and configure it as deployment key for the 
 repository, and to configure git-mirror accordingly. For additional security, 
-one shouldalso configure a shared HMAC secret, such that the webhook can verify 
+one should also configure a shared HMAC secret, such that the webhook can verify 
 that the data indeed comes from GitHub.
 
 To make your job easier, there is a script ``github-add-hooks.py`` that can do 
 all this for you. It assumes that the repository exists on the GitHub side, but 
-has not yet been configure for git-mirror, neither locally nor remotely.
+has not yet been configured for git-mirror at all.
 
 To give the script access to your repositories, you need to create an access 
 token for it. Go to "Personal Access Tokens" in your GitHub configuration, and 
@@ -120,12 +120,15 @@ below ``mail-sender``)::
 
 Now you can call the automatic setup script as follows::
 
-  ./github-add-hooks.py -o UserName -e email@example.com -l ~/repositories/repo-name.git/ -n github-repo-name
+  ./github-add-hooks.py -o UserName -e email@example.com \
+    -l ~/repositories/repo-name.git/ -n github-repo-name
 
 Notice that the username is case-sensitive! This will do all the setup on the 
 GitHub side, and it will add an appropriate configuration block to your local 
-``git-mirror.conf``. You will still have to manually add the local git hook to 
-gitolite.
+``git-mirror.conf``. You still have to manually add the local git hook to 
+gitolite. Once you are done, any push happening to either gitolite or GitHub
+will be visible on the other side immediately. This applies even to pull
+requests that you merge in the GitHub web interface.
 
 Source, License
 ---------------
