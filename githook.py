@@ -35,7 +35,7 @@ if __name__ == "__main__":
         # find the repository we are dealing with
         reponame = find_repo_by_directory(repos, os.getcwd())
         if reponame is None or reponame not in repos:
-            raise Exception("Unknown repository.")
+            raise Exception("Unknown repository {}.".format(reponame))
         
         # now sync this repository
         repo = repos[reponame]
@@ -50,5 +50,5 @@ if __name__ == "__main__":
         if repo is not None:
             repo.mail_owner("There was a problem running the git-mirror git hook:\n\n{}".format(traceback.format_exc()))
         # do not print all the details
-        sys.stderr.write("We have a problem:\n{}".format('\n'.join(traceback.format_exception_only(type(e), e))))
+        sys.stderr.write("git-mirror: We have a problem:\n{}".format('\n'.join(traceback.format_exception_only(type(e), e))))
 

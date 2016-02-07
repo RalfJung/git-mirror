@@ -51,7 +51,7 @@ if __name__ == "__main__":
         githubEvent = sys.argv[2]
         githubSignature = sys.argv[3]
         if reponame not in repos:
-            raise Exception("Repository missing or not found.")
+            raise Exception("Repository {} missing or not found.".format(reponame))
         repo = repos[reponame]
         
         # now sync this repository
@@ -91,4 +91,4 @@ if __name__ == "__main__":
         print("Status: 500 Internal Server Error")
         print("Content-Type: text/plain")
         print()
-        print("We have a problem:\n{}".format('\n'.join(traceback.format_exception_only(type(e), e))))
+        print("git-mirror: We have a problem:\n{}".format('\n'.join(traceback.format_exception_only(type(e), e))))
