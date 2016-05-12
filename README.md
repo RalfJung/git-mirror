@@ -126,7 +126,7 @@ GitHub web interface.
 ## Source, License
 
 You can find the sources in the [git
-repository](http://www.ralfj.de/git/git-mirror.git) (also available
+repository](https://git.ralfj.de/git-mirror.git) (also available
 [on GitHub](https://github.com/RalfJung/git-mirror)).  Guess what, the
 two are synced with this tool ;-) . They are provided under a
 [2-clause BSD
