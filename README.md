@@ -33,7 +33,7 @@ Make sure you read the [security note](http://gitolite.com/gitolite/non-core.htm
 concerning this configuration.
 
 Now add a file called `local/hooks/repo-specific/git-mirror` to your 
-`gitolite-admin` repository, make ii executable, and give it the following 
+`gitolite-admin` repository, make it executable, and give it the following
 content:
 
     #!/bin/sh
