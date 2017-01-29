@@ -32,6 +32,9 @@ repository, so enable the following line in `/home/git/.gitolite.rc`:
 Make sure you read the [security note](http://gitolite.com/gitolite/non-core.html#pushcode)
 concerning this configuration.
 
+Furthermore, uncomment the `repo-specific-hooks` line in the rc file or add it
+to the `ENABLE` list if it doesn't exist.
+
 Now add a file called `local/hooks/repo-specific/git-mirror` to your 
 `gitolite-admin` repository, make it executable, and give it the following
 content:
