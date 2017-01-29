@@ -98,7 +98,8 @@ The next step is to add this as a webhook to the GitHub repository you want to
 sync with, to create a fresh SSH key and configure it as deployment key for the 
 repository, and to configure git-mirror accordingly. For additional security, 
 one should also configure a shared HMAC secret, such that the webhook can verify 
-that the data indeed comes from GitHub.
+that the data indeed comes from GitHub.  On the git-mirror side, the HMAC secret
+is configured with the `hmac-secret` repository option.
 
 To make your job easier, there is a script `github-add-hooks.py` that can do 
 all this for you. It assumes that the repository exists on the GitHub side, but 

@@ -84,7 +84,7 @@ class Repo:
         self.name = name
         self.local = conf['local']
         self.owner = conf['owner'] # email address to notify in case of problems
-        self.hmac_secret = conf['hmac-secret'].encode('utf-8')
+        self.hmac_secret = conf['hmac-secret'].encode('utf-8') if 'hmac-secret' in conf else None
         self.deploy_key = conf['deploy-key'] # the SSH ky used for authenticating against remote hosts
         self.mirrors = {} # maps mirrors to their URLs
         mirror_prefix = 'mirror-'
@@ -97,6 +97,7 @@ class Repo:
         send_mail("git-mirror {}".format(self.name), msg, recipients = [self.owner], sender = mail_sender)
 
     def compute_hmac(self, data):
+        assert self.hmac_secret is not None
         h = hmac.new(self.hmac_secret, digestmod = hashlib.sha1)
         h.update(data)
         return h.hexdigest()
