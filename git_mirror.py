@@ -29,6 +29,17 @@ import email.mime.text, email.utils, smtplib
 mail_sender = "null@localhost"
 config_file = os.path.join(os.path.dirname(__file__), 'git-mirror.conf')
 
+def Popen_quirky(cmd, **args):
+    '''
+    Runs cmd via subprocess.Popen; and if that fails, puts it into the shell (/bin/sh).
+    It seems that's what executing things in bash does, and even execve.  Also,
+    all so-far released versions of Gitolite get the shebang line wrong.
+    '''
+    try:
+        return subprocess.Popen(cmd, **args)
+    except OSError as e:
+        return subprocess.Popen(['/bin/sh'] + cmd, **args)
+
 class GitCommand:
     def __getattr__(self, name):
         def call(*args, capture_stderr = False, check = True):
@@ -177,7 +188,7 @@ class Repo:
         # Now run the post-receive hooks. This will *also* push the changes to all mirrors, as we
         # are one of these hooks!
         os.putenv("GIT_MIRROR_SOURCE", mirror) # tell ourselves which repo we do *not* have to update
-        with subprocess.Popen(['hooks/post-receive'], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT) as p:
+        with Popen_quirky(['hooks/post-receive'], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT) as p:
             (stdout, stderr) = p.communicate("{} {} {}\n".format(oldsha, newsha, ref).encode('utf-8'))
             stdout = stdout.decode('utf-8')
             if p.returncode:
