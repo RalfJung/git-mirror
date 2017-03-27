@@ -177,7 +177,7 @@ class Repo:
         # Now run the post-receive hooks. This will *also* push the changes to all mirrors, as we
         # are one of these hooks!
         os.putenv("GIT_MIRROR_SOURCE", mirror) # tell ourselves which repo we do *not* have to update
-        with subprocess.Popen(['/bin/sh', 'hooks/post-receive'], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT) as p:
+        with subprocess.Popen(['hooks/post-receive'], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT) as p:
             (stdout, stderr) = p.communicate("{} {} {}\n".format(oldsha, newsha, ref).encode('utf-8'))
             stdout = stdout.decode('utf-8')
             if p.returncode:
