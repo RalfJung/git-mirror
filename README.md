@@ -127,6 +127,10 @@ either gitolite or GitHub will be visible on the other side
 immediately. This applies even to pull requests that you merge in the
 GitHub web interface.
 
+The script will only sync branches when they get pushed to. To initialize the
+GitHub repository with all the branches that already exist, you can do `git push
+--all git@github.com:user/repo`.
+
 ## Source, License
 
 You can find the sources in the [git
