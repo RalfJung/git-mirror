@@ -15,14 +15,14 @@ def generate_ssh_key(name, bits):
     subprocess.check_call(["ssh-keygen", "-f", name, "-C", name, "-b", str(bits), "-q", "-N", ""])
 
 def add_deploy_key(key_name, repo_owner, repo_name, access_token):
-    url = "https://api.github.com/repos/{owner}/{repo}/keys?access_token={token}".format(owner=repo_owner, repo=repo_name, token=access_token)
+    url = "https://api.github.com/repos/{owner}/{repo}/keys".format(owner=repo_owner, repo=repo_name)
     data = { 'title': os.path.basename(key_name), 'key': open(key_name+".pub").read() }
-    r = requests.post(url, data=json.dumps(data))
+    r = requests.post(url, data=json.dumps(data), headers = {"Authorization": "token {token}".format(token=access_token)})
     if r.status_code >= 300:
         raise Exception(str(json.loads(r.content.decode('utf-8'))))
     
 def add_web_hook(webhook_url, hmac_secret, repo_owner, repo_name, access_token):
-    url = 'https://api.github.com/repos/{owner}/{repo}/hooks?access_token={token}'.format(owner=repo_owner, repo=repo_name, token=access_token)
+    url = 'https://api.github.com/repos/{owner}/{repo}/hooks'.format(owner=repo_owner, repo=repo_name)
     data = {
         'name': "web",
         'active': True,
@@ -33,7 +33,7 @@ def add_web_hook(webhook_url, hmac_secret, repo_owner, repo_name, access_token):
             'secret': hmac_secret,
         }
     }
-    r = requests.post(url, data=json.dumps(data))
+    r = requests.post(url, data=json.dumps(data), headers = {"Authorization": "token {token}".format(token=access_token)})
     if r.status_code >= 300:
         raise Exception(str(json.loads(r.content.decode('utf-8'))))
 
